@@ -1,10 +1,9 @@
-
-import React, { useState, useEffect, useRef } from 'react';
-import SockJS from 'sockjs-client';
-import { Client } from '@stomp/stompjs';
+import React, { useState, useEffect } from 'react';
+import { useWebSocket } from '../context/WebSocketContext';
 import Column from './Column';
 import { DndContext, DragOverlay } from '@dnd-kit/core';
 import TaskCard from './TaskCard';
+import '../stylesheets/BoardColumn.css';
 
 const columns = [
   { id: 'todo', title: 'Pendiente' },
@@ -13,9 +12,9 @@ const columns = [
 ];
 
 
-const Board = ({ tasks, onMoveTask, boardId, userId }) => {
+const Board = ({ tasks, onMoveTask, boardId, userId, onSelectTask }) => {
   const [activeId, setActiveId] = useState(null);
-  const stompClient = useRef(null);
+  const { stompClient, addOnConnectListener } = useWebSocket();
 
   // Agrupar tareas por columna
   const tasksByColumn = columns.reduce((acc, col) => {
@@ -63,53 +62,42 @@ const Board = ({ tasks, onMoveTask, boardId, userId }) => {
   };
 
   useEffect(() => {
-    // Conexión WebSocket
-    console.log('[WebSocket] Intentando conectar a ws://localhost:8080/ws');
-    const socket = new SockJS('http://localhost:8080/ws'); // Cambia la URL si es necesario
-    const client = new Client({
-      webSocketFactory: () => socket,
-      reconnectDelay: 5000,
-      onConnect: () => {
-        console.log('[WebSocket] Conectado');
-        // Suscribirse al topic del board
-        client.subscribe(`/topic/task-drag.${boardId}`, (message) => {
-          console.log('[WebSocket] Mensaje recibido:', message.body);
+    if (!stompClient?.current) return;
+    let subscription;
+    const subscribe = () => {
+      if (stompClient.current.connected) {
+        subscription = stompClient.current.subscribe(`/topic/task-drag.${boardId}`, (message) => {
           const event = JSON.parse(message.body);
-          // Evita procesar el evento si es tu propio drag (opcional)
           if (event.userId !== userId) {
             onMoveTask(Number(event.taskId), event.toStatus);
-          } else {
-            console.log('[WebSocket] Evento propio ignorado');
           }
         });
-        console.log(`[WebSocket] Suscrito a /topic/task-drag.${boardId}`);
-      },
-      onStompError: (frame) => {
-        console.error('[WebSocket] Error STOMP:', frame);
-      },
-      onWebSocketError: (event) => {
-        console.error('[WebSocket] Error de conexión:', event);
       }
-    });
-    stompClient.current = client;
-    client.activate();
-    return () => {
-      client.deactivate();
-      console.log('[WebSocket] Desconectado');
     };
-  }, [boardId, userId, onMoveTask]);
+    let removeListener;
+    if (stompClient.current.connected) {
+      subscribe();
+    } else {
+      removeListener = addOnConnectListener(subscribe);
+    }
+    return () => {
+      if (subscription) subscription.unsubscribe();
+      if (removeListener) removeListener();
+    };
+  }, [stompClient, addOnConnectListener, boardId, userId, onMoveTask]);
 
   const activeTask = tasks.find(t => t.id === Number(activeId));
 
   return (
     <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-      <div style={{ display: 'flex', gap: '16px', marginTop: '32px' }}>
+      <div className="board-container">
         {columns.map(col => (
           <Column
             key={col.id}
             column={col}
             tasks={tasksByColumn[col.id]}
             onMoveTask={onMoveTask}
+            onSelectTask={onSelectTask}
           />
         ))}
       </div>

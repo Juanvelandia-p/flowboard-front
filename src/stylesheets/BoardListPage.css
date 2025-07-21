@@ -1,0 +1,41 @@
+.board-list-container {
+  max-width: 400px;
+  margin: 60px auto;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 12px #cbd5e1;
+  padding: 32px 24px;
+  text-align: center;
+}
+
+.board-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.board-list-item {
+  margin-bottom: 18px;
+}
+
+.board-list-btn {
+  background: #6366f1;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 12px 24px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.board-list-btn:hover {
+  background: #4338ca;
+}
+
+.board-list-loading,
+.board-list-error {
+  text-align: center;
+  margin-top: 40px;
+  color: #6366f1;
+}

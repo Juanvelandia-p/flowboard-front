@@ -2,24 +2,25 @@
 import React from 'react';
 import TaskCard from './TaskCard';
 import { useDroppable } from '@dnd-kit/core';
+import '../stylesheets/BoardColumn.css';
 
 
-const Column = ({ column, tasks, onMoveTask }) => {
+const Column = ({ column, tasks, onMoveTask, onSelectTask }) => {
   const { setNodeRef, isOver } = useDroppable({ id: column.id });
   return (
     <div
       ref={setNodeRef}
-      style={{
-        minWidth: 300,
-        background: isOver ? '#e0e7ff' : '#f4f4f4',
-        borderRadius: 8,
-        padding: 16,
-        minHeight: 200
-      }}
+      className={`column${isOver ? ' over' : ''}`}
     >
-      <h2>{column.title}</h2>
+      <h2 className="column-title">{column.title}</h2>
       {tasks.map((task, idx) => (
-        <TaskCard key={task.id} task={task} onMoveTask={onMoveTask} index={idx} />
+        <TaskCard
+          key={task.id}
+          task={task}
+          onMoveTask={onMoveTask}
+          index={idx}
+          onSelectTask={onSelectTask}
+        />
       ))}
     </div>
   );

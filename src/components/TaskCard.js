@@ -1,25 +1,34 @@
 import React from 'react';
 import { useDraggable } from '@dnd-kit/core';
+import '../stylesheets/TaskCard.css';
 
-const TaskCard = ({ task, onMoveTask, index }) => {
+const TaskCard = ({ task, onMoveTask, index, onSelectTask }) => {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: task.id });
   return (
     <div
       ref={setNodeRef}
-      {...attributes}
-      {...listeners}
-      style={{
-        background: isDragging ? '#dbeafe' : '#fff',
-        margin: '8px 0',
-        padding: 12,
-        borderRadius: 6,
-        boxShadow: '0 1px 4px #ccc',
-        cursor: 'grab',
-        opacity: isDragging ? 0.7 : 1
-      }}
+      className={`task-card${isDragging ? ' dragging' : ''}`}
     >
-      <div><strong>{task.title}</strong></div>
-      <div>{task.description}</div>
+      <span
+        {...attributes}
+        {...listeners}
+        className="task-card-handle"
+        title="Arrastrar tarea"
+        aria-label="Arrastrar tarea"
+      >☰</span>
+      <div className="task-card-content">
+        <div className="task-card-title">{task.title}</div>
+        <div>{task.description}</div>
+      </div>
+      <button
+        className="task-card-chat-btn"
+        title="Abrir chat"
+        onClick={e => {
+          e.stopPropagation();
+          if (onSelectTask) onSelectTask(task.id);
+        }}
+        tabIndex={0}
+      >💬</button>
     </div>
   );
 };
