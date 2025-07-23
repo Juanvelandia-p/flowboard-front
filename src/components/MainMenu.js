@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import logo from '../assets/logo.png';
 import '../stylesheets/MainMenu.css';
-import { useWebSocket } from '../context/WebSocketContext'; // Asegúrate de tener este contexto
 import TeamPanel from './TeamPanel';
 
 export default function MainMenu({ token, onLogout, onSelectTeam, userEmail, userId }) {
@@ -18,19 +17,44 @@ export default function MainMenu({ token, onLogout, onSelectTeam, userEmail, use
   const [showNotifications, setShowNotifications] = useState(false);
   const bellRef = useRef();
 
+  // Trae equipos y pendientes al montar
   useEffect(() => {
+    const fetchTeams = () => {
+      setLoading(true);
+      axios.get('https://flowboard-b3avawgzaqftbtcd.canadacentral-01.azurewebsites.net/api/teams/my', {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+        .then(res => {
+          setTeams(res.data);
+          setLoading(false);
+        })
+        .catch(() => {
+          setError('No se pudieron cargar los equipos');
+          setLoading(false);
+        });
+    };
+
+    const fetchPendingInvites = () => {
+      setLoadingInvites(true);
+      axios.get('https://flowboard-b3avawgzaqftbtcd.canadacentral-01.azurewebsites.net/api/teams/pending-invitations', {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+        .then(res => {
+          setPendingInvites(res.data);
+          setLoadingInvites(false);
+        })
+        .catch(() => setLoadingInvites(false));
+    };
+
     fetchTeams();
     fetchPendingInvites();
-    // eslint-disable-next-line
-  }, []);
 
-  // Refresca solo las invitaciones cada 5 segundos
-  useEffect(() => {
+    // Refresca solo las invitaciones cada 5 segundos
     const interval = setInterval(() => {
       fetchPendingInvites();
     }, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [token]);
 
   // Cierra el menú de notificaciones si se hace clic fuera
   useEffect(() => {
@@ -47,35 +71,6 @@ export default function MainMenu({ token, onLogout, onSelectTeam, userEmail, use
     };
   }, [showNotifications]);
 
-  const fetchTeams = () => {
-    setLoading(true);
-    // Obtener equipos
-    axios.get('https://flowboard-b3avawgzaqftbtcd.canadacentral-01.azurewebsites.net/api/teams/my', {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => {
-        setTeams(res.data);
-        setLoading(false);
-      })
-      .catch(() => {
-        setError('No se pudieron cargar los equipos');
-        setLoading(false);
-      });
-  };
-
-  const fetchPendingInvites = () => {
-    setLoadingInvites(true);
-    // Obtener invitaciones pendientes
-    axios.get('https://flowboard-b3avawgzaqftbtcd.canadacentral-01.azurewebsites.net/api/teams/pending-invitations', {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => {
-        setPendingInvites(res.data);
-        setLoadingInvites(false);
-      })
-      .catch(() => setLoadingInvites(false));
-  };
-
   const handleAddInvite = (e) => {
     e.preventDefault();
     if (inviteEmail && !invitedEmails.includes(inviteEmail)) {
@@ -91,7 +86,6 @@ export default function MainMenu({ token, onLogout, onSelectTeam, userEmail, use
   const handleCreateTeam = (e) => {
     e.preventDefault();
     if (!newTeam.trim()) return;
-    // Crear equipo
     axios.post('https://flowboard-b3avawgzaqftbtcd.canadacentral-01.azurewebsites.net/api/teams', {
       name: newTeam,
       invitedEmails: invitedEmails
@@ -102,19 +96,50 @@ export default function MainMenu({ token, onLogout, onSelectTeam, userEmail, use
         setShowCreate(false);
         setNewTeam('');
         setInvitedEmails([]);
-        fetchTeams();
+        // Refresca equipos
+        setLoading(true);
+        axios.get('https://flowboard-b3avawgzaqftbtcd.canadacentral-01.azurewebsites.net/api/teams/my', {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+          .then(res => {
+            setTeams(res.data);
+            setLoading(false);
+          })
+          .catch(() => {
+            setError('No se pudieron cargar los equipos');
+            setLoading(false);
+          });
       })
       .catch(() => alert('No se pudo crear el equipo'));
   };
 
   const handleAcceptInvite = (teamId) => {
-    // Aceptar invitación
     axios.post(`https://flowboard-b3avawgzaqftbtcd.canadacentral-01.azurewebsites.net/api/teams/${teamId}/accept-invitation`, {}, {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(() => {
-        fetchTeams();
-        fetchPendingInvites();
+        // Refresca equipos e invitaciones
+        setLoading(true);
+        axios.get('https://flowboard-b3avawgzaqftbtcd.canadacentral-01.azurewebsites.net/api/teams/my', {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+          .then(res => {
+            setTeams(res.data);
+            setLoading(false);
+          })
+          .catch(() => {
+            setError('No se pudieron cargar los equipos');
+            setLoading(false);
+          });
+        setLoadingInvites(true);
+        axios.get('https://flowboard-b3avawgzaqftbtcd.canadacentral-01.azurewebsites.net/api/teams/pending-invitations', {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+          .then(res => {
+            setPendingInvites(res.data);
+            setLoadingInvites(false);
+          })
+          .catch(() => setLoadingInvites(false));
       })
       .catch(() => alert('No se pudo aceptar la invitación'));
   };
@@ -218,10 +243,49 @@ export default function MainMenu({ token, onLogout, onSelectTeam, userEmail, use
                 team={team}
                 token={token}
                 userId={userId}
-                onTeamDeleted={fetchTeams}
-                onMemberRemoved={fetchTeams}
-                onMemberAdded={fetchTeams}
-                onSelectTeam={onSelectTeam} // <-- agrega esto
+                onTeamDeleted={() => {
+                  setLoading(true);
+                  axios.get('https://flowboard-b3avawgzaqftbtcd.canadacentral-01.azurewebsites.net/api/teams/my', {
+                    headers: { Authorization: `Bearer ${token}` }
+                  })
+                    .then(res => {
+                      setTeams(res.data);
+                      setLoading(false);
+                    })
+                    .catch(() => {
+                      setError('No se pudieron cargar los equipos');
+                      setLoading(false);
+                    });
+                }}
+                onMemberRemoved={() => {
+                  setLoading(true);
+                  axios.get('https://flowboard-b3avawgzaqftbtcd.canadacentral-01.azurewebsites.net/api/teams/my', {
+                    headers: { Authorization: `Bearer ${token}` }
+                  })
+                    .then(res => {
+                      setTeams(res.data);
+                      setLoading(false);
+                    })
+                    .catch(() => {
+                      setError('No se pudieron cargar los equipos');
+                      setLoading(false);
+                    });
+                }}
+                onMemberAdded={() => {
+                  setLoading(true);
+                  axios.get('https://flowboard-b3avawgzaqftbtcd.canadacentral-01.azurewebsites.net/api/teams/my', {
+                    headers: { Authorization: `Bearer ${token}` }
+                  })
+                    .then(res => {
+                      setTeams(res.data);
+                      setLoading(false);
+                    })
+                    .catch(() => {
+                      setError('No se pudieron cargar los equipos');
+                      setLoading(false);
+                    });
+                }}
+                onSelectTeam={onSelectTeam}
               />
             ))}
           </div>

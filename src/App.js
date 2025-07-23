@@ -19,8 +19,7 @@ function App() {
   const [tasks, setTasks] = useState([]);
   const [selectedTaskId, setSelectedTaskId] = useState(null);
 
-  const [userEmail, setUserEmail] = useState(localStorage.getItem('userEmail') || '');
-  const [userId, setUserId] = useState(localStorage.getItem('userId') || '');
+  const [userId] = useState(localStorage.getItem('userId') || '');
 
   const [showAddSprint, setShowAddSprint] = useState(false);
   const [newSprintName, setNewSprintName] = useState('');
