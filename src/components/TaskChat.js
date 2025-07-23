@@ -1,7 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useWebSocket } from '../context/WebSocketContext';
 
-const TaskChat = ({ taskId, userId, onClose }) => {
+const API_BASE = 'https://flowboard-b3avawgzaqftbtcd.canadacentral-01.azurewebsites.net/api';
+
+const TaskChat = ({ taskId, userId, token, onClose }) => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const { stompClient, addOnConnectListener } = useWebSocket();
@@ -9,12 +11,17 @@ const TaskChat = ({ taskId, userId, onClose }) => {
 
   // Cargar historial de mensajes al abrir el chat
   useEffect(() => {
-    if (!taskId) return;
-    fetch(`https://flowboard-b3avawgzaqftbtcd.canadacentral-01.azurewebsites.net/api/messages/task/${taskId}`)
-      .then(res => res.json())
+    if (!taskId || !token) return;
+    fetch(`${API_BASE}/messages/task/${taskId}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(res => {
+        if (!res.ok) throw new Error('No autorizado');
+        return res.json();
+      })
       .then(data => setMessages(data))
       .catch(() => setMessages([]));
-  }, [taskId]);
+  }, [taskId, token]);
 
   useEffect(() => {
     if (!taskId || !stompClient?.current) return;
