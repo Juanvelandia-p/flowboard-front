@@ -4,7 +4,7 @@ import Board from './components/Board';
 import TaskChat from './components/TaskChat';
 import SprintSelector from './components/SprintSelector';
 import LoginPage from './components/LoginPage';
-import BoardListPage from './components/BoardListPage';
+import MainMenu from './components/MainMenu';
 import './stylesheets/AppLayout.css';
 import './stylesheets/BoardListPage.css';
 import logo from './assets/logo.png';
@@ -33,14 +33,17 @@ const tasksBySprint = {
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem('token'));
+  const [selectedTeam, setSelectedTeam] = useState(null);
   const [selectedBoard, setSelectedBoard] = useState(null);
   const [selectedSprint, setSelectedSprint] = useState(sprints[0].id);
   const [tasks, setTasks] = useState(tasksBySprint[selectedSprint]);
   const [selectedTaskId, setSelectedTaskId] = useState(null);
 
-  // Puedes cambiar estos valores por los reales de tu app
+  // Obtén el email del usuario autenticado
+  const [userEmail, setUserEmail] = useState(localStorage.getItem('userEmail') || '');
+  const [userId, setUserId] = useState(localStorage.getItem('userId') || '');
+
   const boardId = selectedBoard ? selectedBoard.id : 'demo-board';
-  const userId = 'user-' + Math.floor(Math.random() * 10000);
 
   const handleSprintChange = (e) => {
     const sprintId = Number(e.target.value);
@@ -57,29 +60,39 @@ function App() {
     );
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setToken(null);
+    setSelectedTeam(null);
+    setSelectedBoard(null);
+    setSelectedTaskId(null);
+  };
+
   // 1. Si no hay token, muestra login
   if (!token) {
     return <LoginPage onLogin={setToken} />;
   }
 
-  // 2. Si no hay tablero seleccionado, muestra lista de tableros
-  if (!selectedBoard) {
-    return <BoardListPage token={token} onSelectBoard={setSelectedBoard} />;
+  // 2. Si no hay equipo seleccionado, muestra menú principal con barra lateral
+  if (!selectedTeam) {
+    return (
+      <MainMenu
+        token={token}
+        onLogout={handleLogout}
+        onSelectTeam={setSelectedTeam}
+        userId={userId}
+      />
+    );
   }
 
-  // 3. Si hay tablero, muestra el tablero y tareas
+  // 3. Si hay equipo seleccionado, muestra el tablero y tareas (ya no hay BoardListPage)
   return (
     <div className="app-root">
       <header className="header-bar">
         <img src={logo} alt="FlowBoard logo" className="header-logo" />
         <button
           className="logout-btn"
-          onClick={() => {
-            localStorage.removeItem('token');
-            setToken(null);
-            setSelectedBoard(null);
-            setSelectedTaskId(null);
-          }}
+          onClick={handleLogout}
         >
           Cerrar sesión
         </button>
