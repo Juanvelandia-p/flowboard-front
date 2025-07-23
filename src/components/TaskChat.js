@@ -19,7 +19,10 @@ const TaskChat = ({ taskId, userId, token, onClose }) => {
         if (!res.ok) throw new Error('No autorizado');
         return res.json();
       })
-      .then(data => setMessages(data))
+      .then(data => {
+        console.log('Mensajes recibidos:', data);
+        setMessages(data);
+      })
       .catch(() => setMessages([]));
   }, [taskId, token]);
 
