@@ -9,6 +9,7 @@ import MainMenu from './components/MainMenu';
 import './stylesheets/AppLayout.css';
 import './stylesheets/BoardListPage.css';
 import logo from './assets/logo.png';
+import { useWebSocket } from './context/WebSocketContext';
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem('token'));
@@ -26,6 +27,8 @@ function App() {
   const [newSprintStart, setNewSprintStart] = useState('');
   const [newSprintEnd, setNewSprintEnd] = useState('');
   const [newSprintGoal, setNewSprintGoal] = useState('');
+
+  const { stompClient, addOnConnectListener } = useWebSocket();
 
   // 1. Cuando seleccionas un equipo, obtén el tablero
   useEffect(() => {
@@ -90,6 +93,29 @@ function App() {
     };
     fetchTasks();
   }, [selectedSprint, token]);
+
+  useEffect(() => {
+    if (!board || !stompClient?.current) return;
+    let subscription;
+    const subscribe = () => {
+      if (stompClient.current.connected) {
+        subscription = stompClient.current.subscribe(`/topic/board-sprints.${board.id}`, (message) => {
+          const newSprint = JSON.parse(message.body);
+          setSprints(prev => [...prev, newSprint]);
+        });
+      }
+    };
+    let removeListener;
+    if (stompClient.current.connected) {
+      subscribe();
+    } else {
+      removeListener = addOnConnectListener(subscribe);
+    }
+    return () => {
+      if (subscription) subscription.unsubscribe();
+      if (removeListener) removeListener();
+    };
+  }, [board, stompClient, addOnConnectListener]);
 
   const handleSprintChange = (e) => {
     setSelectedSprint(e.target.value);
