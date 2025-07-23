@@ -6,7 +6,7 @@ import TaskCard from './TaskCard';
 import '../stylesheets/BoardColumn.css';
 import axios from 'axios';
 
-const API_BASE = 'http://localhost:8080/api';
+const API_BASE = 'https://flowboard-b3avawgzaqftbtcd.canadacentral-01.azurewebsites.net/api';
 
 export default function Board({ tasks, onMoveTask, boardId, userId, onSelectTask, selectedSprint, token, refreshTasks }) {
   const [activeId, setActiveId] = useState(null);
