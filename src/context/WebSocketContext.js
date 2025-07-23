@@ -21,7 +21,8 @@ export const WebSocketProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    const socket = new SockJS('https://flowboard-b3avawgzaqftbtcd.canadacentral-01.azurewebsites.net/ws');
+    const WS_BASE = 'http://localhost:8080/ws';
+    const socket = new SockJS(WS_BASE);
     const client = new Client({
       webSocketFactory: () => socket,
       reconnectDelay: 5000,

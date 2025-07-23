@@ -6,6 +6,8 @@ import TaskCard from './TaskCard';
 import '../stylesheets/BoardColumn.css';
 import axios from 'axios';
 
+const API_BASE = 'http://localhost:8080/api';
+
 export default function Board({ tasks, onMoveTask, boardId, userId, onSelectTask, selectedSprint, token, refreshTasks }) {
   const [activeId, setActiveId] = useState(null);
   const [showAddTask, setShowAddTask] = useState(false);
@@ -98,7 +100,7 @@ export default function Board({ tasks, onMoveTask, boardId, userId, onSelectTask
     e.preventDefault();
     try {
       // Crear tarea
-      await axios.post('https://flowboard-b3avawgzaqftbtcd.canadacentral-01.azurewebsites.net/api/tasks', {
+      await axios.post(`${API_BASE}/tasks`, {
         titulo: newTaskTitle,
         descripcion: newTaskDesc,
         estado: newTaskEstado,
@@ -120,7 +122,7 @@ export default function Board({ tasks, onMoveTask, boardId, userId, onSelectTask
     if (!window.confirm('¿Seguro que deseas eliminar esta tarea?')) return;
     try {
       // Eliminar tarea
-      await axios.delete(`https://flowboard-b3avawgzaqftbtcd.canadacentral-01.azurewebsites.net/api/tasks/${taskId}`, {
+      await axios.delete(`${API_BASE}/tasks/${taskId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (refreshTasks) refreshTasks();

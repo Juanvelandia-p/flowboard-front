@@ -10,7 +10,9 @@ const TaskChat = ({ taskId, userId, onClose }) => {
   // Cargar historial de mensajes al abrir el chat
   useEffect(() => {
     if (!taskId) return;
-    fetch(`https://flowboard-b3avawgzaqftbtcd.canadacentral-01.azurewebsites.net/api/messages/task/${taskId}`)
+    const API_BASE = 'http://localhost:8080/api';
+
+    fetch(`${API_BASE}/messages/task/${taskId}`)
       .then(res => res.json())
       .then(data => setMessages(data))
       .catch(() => setMessages([]));
