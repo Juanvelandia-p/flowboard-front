@@ -6,7 +6,7 @@ import TaskCard from './TaskCard';
 import '../stylesheets/BoardColumn.css';
 import axios from 'axios';
 
-const API_BASE = 'https://flowboard-b3avawgzaqftbtcd.canadacentral-01.azurewebsites.net/api';
+const API_BASE = 'http://localhost:8080/api';
 
 export default function Board({ tasks, onMoveTask, boardId, userId, onSelectTask, selectedSprint, token, refreshTasks }) {
   const [activeId, setActiveId] = useState(null);
@@ -85,6 +85,29 @@ export default function Board({ tasks, onMoveTask, boardId, userId, onSelectTask
       if (removeListener) removeListener();
     };
   }, [stompClient, addOnConnectListener, boardId, userId, onMoveTask, tasks]);
+
+  useEffect(() => {
+    if (!selectedSprint || !stompClient?.current) return;
+    let subscription;
+    const subscribe = () => {
+      if (stompClient.current.connected) {
+        subscription = stompClient.current.subscribe(`/topic/sprint-tasks.${selectedSprint}`, (message) => {
+          // Solo refresca tareas cuando se crea una nueva
+          if (refreshTasks) refreshTasks();
+        });
+      }
+    };
+    let removeListener;
+    if (stompClient.current.connected) {
+      subscribe();
+    } else {
+      removeListener = addOnConnectListener(subscribe);
+    }
+    return () => {
+      if (subscription) subscription.unsubscribe();
+      if (removeListener) removeListener();
+    };
+  }, [selectedSprint, stompClient, addOnConnectListener, refreshTasks]);
 
   const activeTask = tasks.find(t => String(t.id) === String(activeId));
 
