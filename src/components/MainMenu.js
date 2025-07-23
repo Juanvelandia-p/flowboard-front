@@ -49,7 +49,8 @@ export default function MainMenu({ token, onLogout, onSelectTeam, userEmail, use
 
   const fetchTeams = () => {
     setLoading(true);
-    axios.get('http://localhost:8080/api/teams/my', {
+    // Obtener equipos
+    axios.get('https://flowboard-b3avawgzaqftbtcd.canadacentral-01.azurewebsites.net/api/teams/my', {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => {
@@ -64,7 +65,8 @@ export default function MainMenu({ token, onLogout, onSelectTeam, userEmail, use
 
   const fetchPendingInvites = () => {
     setLoadingInvites(true);
-    axios.get('http://localhost:8080/api/teams/pending-invitations', {
+    // Obtener invitaciones pendientes
+    axios.get('https://flowboard-b3avawgzaqftbtcd.canadacentral-01.azurewebsites.net/api/teams/pending-invitations', {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => {
@@ -89,7 +91,8 @@ export default function MainMenu({ token, onLogout, onSelectTeam, userEmail, use
   const handleCreateTeam = (e) => {
     e.preventDefault();
     if (!newTeam.trim()) return;
-    axios.post('http://localhost:8080/api/teams', {
+    // Crear equipo
+    axios.post('https://flowboard-b3avawgzaqftbtcd.canadacentral-01.azurewebsites.net/api/teams', {
       name: newTeam,
       invitedEmails: invitedEmails
     }, {
@@ -105,7 +108,8 @@ export default function MainMenu({ token, onLogout, onSelectTeam, userEmail, use
   };
 
   const handleAcceptInvite = (teamId) => {
-    axios.post(`http://localhost:8080/api/teams/${teamId}/accept-invitation`, {}, {
+    // Aceptar invitación
+    axios.post(`https://flowboard-b3avawgzaqftbtcd.canadacentral-01.azurewebsites.net/api/teams/${teamId}/accept-invitation`, {}, {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(() => {

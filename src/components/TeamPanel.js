@@ -20,7 +20,8 @@ export default function TeamPanel({ team, token, userId, onTeamDeleted, onMember
     if (!window.confirm('¿Seguro que deseas eliminar este equipo?')) return;
     setRemoving(true);
     try {
-      await axios.delete(`http://localhost:8080/api/teams/${team.id}`, {
+      // Eliminar equipo
+      await axios.delete(`https://flowboard-b3avawgzaqftbtcd.canadacentral-01.azurewebsites.net/api/teams/${team.id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (onTeamDeleted) onTeamDeleted(team.id);
@@ -35,7 +36,8 @@ export default function TeamPanel({ team, token, userId, onTeamDeleted, onMember
     if (!inviteEmail.trim()) return;
     setAdding(true);
     try {
-      await axios.post(`http://localhost:8080/api/teams/${team.id}/invite`, { email: inviteEmail }, {
+      // Invitar miembro
+      await axios.post(`https://flowboard-b3avawgzaqftbtcd.canadacentral-01.azurewebsites.net/api/teams/${team.id}/invite`, { email: inviteEmail }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setInviteEmail('');
@@ -50,7 +52,8 @@ export default function TeamPanel({ team, token, userId, onTeamDeleted, onMember
   const handleRemoveMember = async (memberId) => {
     if (!window.confirm('¿Seguro que deseas eliminar este miembro?')) return;
     try {
-      await axios.delete(`http://localhost:8080/api/teams/${team.id}/members/${memberId}`, {
+      // Eliminar miembro
+      await axios.delete(`https://flowboard-b3avawgzaqftbtcd.canadacentral-01.azurewebsites.net/api/teams/${team.id}/members/${memberId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (onMemberRemoved) onMemberRemoved(memberId);

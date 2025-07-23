@@ -3,9 +3,9 @@ import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import '../stylesheets/LoginPage.css';
 
-const LOGIN_URL = 'http://localhost:8080/api/auth/login';
-const REGISTER_URL = 'http://localhost:8080/api/users/register';
-const USER_ID_URL = 'http://localhost:8080/api/users/userID';
+const LOGIN_URL = 'https://flowboard-b3avawgzaqftbtcd.canadacentral-01.azurewebsites.net/api/auth/login';
+const REGISTER_URL = 'https://flowboard-b3avawgzaqftbtcd.canadacentral-01.azurewebsites.net/api/users/register';
+const USER_ID_URL = 'https://flowboard-b3avawgzaqftbtcd.canadacentral-01.azurewebsites.net/api/users/userID';
 
 export default function LoginPage({ onLogin }) {
   const [isRegister, setIsRegister] = useState(false);

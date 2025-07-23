@@ -39,15 +39,15 @@ function App() {
     }
     const fetchBoardAndSprints = async () => {
       try {
-        // Obtener el tablero del equipo (asumiendo solo uno por equipo)
-        const boardRes = await axios.get(`http://localhost:8080/api/boards/team/${selectedTeam.id}`, {
+        // Obtener el tablero del equipo
+        const boardRes = await axios.get(`https://flowboard-b3avawgzaqftbtcd.canadacentral-01.azurewebsites.net/api/boards/team/${selectedTeam.id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const boardData = Array.isArray(boardRes.data) ? boardRes.data[0] : boardRes.data;
         setBoard(boardData);
 
         // Obtener sprints del tablero
-        const sprintsRes = await axios.get(`http://localhost:8080/api/sprints/board/${boardData.id}`, {
+        const sprintsRes = await axios.get(`https://flowboard-b3avawgzaqftbtcd.canadacentral-01.azurewebsites.net/api/sprints/board/${boardData.id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setSprints(sprintsRes.data);
@@ -77,7 +77,7 @@ function App() {
     }
     const fetchTasks = async () => {
       try {
-        const tasksRes = await axios.get(`http://localhost:8080/api/sprints/${selectedSprint}/tasks`, {
+        const tasksRes = await axios.get(`https://flowboard-b3avawgzaqftbtcd.canadacentral-01.azurewebsites.net/api/sprints/${selectedSprint}/tasks`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setTasks(tasksRes.data.map(t => ({
@@ -100,7 +100,7 @@ function App() {
   const handleMoveTask = async (taskId, newStatus) => {
     try {
       await axios.put(
-        `http://localhost:8080/api/tasks/${taskId}/estado`,
+        `https://flowboard-b3avawgzaqftbtcd.canadacentral-01.azurewebsites.net/api/tasks/${taskId}/estado`,
         newStatus,
         {
           headers: {
@@ -110,7 +110,7 @@ function App() {
         }
       );
       // Refresca tareas
-      const tasksRes = await axios.get(`http://localhost:8080/api/sprints/${selectedSprint}/tasks`, {
+      const tasksRes = await axios.get(`https://flowboard-b3avawgzaqftbtcd.canadacentral-01.azurewebsites.net/api/sprints/${selectedSprint}/tasks`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setTasks(tasksRes.data.map(t => ({
@@ -136,7 +136,7 @@ function App() {
   const refreshTasks = async () => {
     if (!selectedSprint) return;
     try {
-      const tasksRes = await axios.get(`http://localhost:8080/api/sprints/${selectedSprint}/tasks`, {
+      const tasksRes = await axios.get(`https://flowboard-b3avawgzaqftbtcd.canadacentral-01.azurewebsites.net/api/sprints/${selectedSprint}/tasks`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setTasks(tasksRes.data.map(t => ({
@@ -152,7 +152,7 @@ function App() {
   const handleAddSprint = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post('http://localhost:8080/api/sprints', {
+      const res = await axios.post('https://flowboard-b3avawgzaqftbtcd.canadacentral-01.azurewebsites.net/api/sprints', {
         nombre: newSprintName,
         boardId: board.id,
         fechaInicio: newSprintStart,

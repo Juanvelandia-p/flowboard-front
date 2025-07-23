@@ -97,7 +97,8 @@ export default function Board({ tasks, onMoveTask, boardId, userId, onSelectTask
   const handleAddTask = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:8080/api/tasks', {
+      // Crear tarea
+      await axios.post('https://flowboard-b3avawgzaqftbtcd.canadacentral-01.azurewebsites.net/api/tasks', {
         titulo: newTaskTitle,
         descripcion: newTaskDesc,
         estado: newTaskEstado,
@@ -118,7 +119,8 @@ export default function Board({ tasks, onMoveTask, boardId, userId, onSelectTask
   const handleDeleteTask = async (taskId) => {
     if (!window.confirm('¿Seguro que deseas eliminar esta tarea?')) return;
     try {
-      await axios.delete(`http://localhost:8080/api/tasks/${taskId}`, {
+      // Eliminar tarea
+      await axios.delete(`https://flowboard-b3avawgzaqftbtcd.canadacentral-01.azurewebsites.net/api/tasks/${taskId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (refreshTasks) refreshTasks();
