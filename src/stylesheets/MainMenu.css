@@ -1,0 +1,300 @@
+.team-list-container {
+  max-width: 400px;
+  margin: 60px auto;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 12px #cbd5e1;
+  padding: 32px 24px;
+  text-align: center;
+}
+
+.team-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.team-list-item {
+  margin-bottom: 18px;
+}
+
+.team-list-btn {
+  background: #38bdf8;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 12px 24px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.team-list-btn:hover {
+  background: #0ea5e9;
+}
+
+.team-list-loading,
+.team-list-error,
+.team-list-empty {
+  text-align: center;
+  margin-top: 40px;
+  color: #38bdf8;
+}
+
+.main-menu-root {
+  min-height: 100vh;
+  background: #f3f4f6;
+}
+
+.header-bar {
+  position: relative;
+  background: #6366f1;
+  min-height: 40px;         /* Reduce el alto mínimo */
+  height: 30px;             /* Fija el alto */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;       /* Aumenta el ancho máximo */
+  margin: 0 auto;
+  border-radius: 0 0 16px 16px;
+  box-shadow: 0 2px 8px #cbd5e1;
+  padding: 0 32px;          /* Más espacio horizontal */
+}
+
+.header-logo {
+  height: 36px;             /* Reduce el tamaño del logo para que combine con el nuevo alto */
+  margin: 0;
+  display: block;
+}
+
+.logout-btn {
+  position: static; /* Quita absolute para que respete el flex */
+  background: #ef4444;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 18px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.2s;
+  margin-left: 16px; /* Espacio entre logo y botón */
+}
+.logout-btn:hover {
+  background: #dc2626;
+}
+
+.main-menu-content-layout {
+  display: flex;
+  min-height: calc(100vh - 80px);
+}
+
+.main-menu-sidebar {
+  width: 270px;
+  background: #6366f1;
+  color: #fff;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 80px);
+  box-shadow: 2px 0 12px #c7d2fe33;
+}
+
+.main-menu-sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 24px 18px 18px 18px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  border-bottom: 1px solid #818cf8;
+}
+
+.main-menu-teams {
+  flex: 1;
+  padding: 18px;
+}
+
+.main-menu-loading,
+.main-menu-error {
+  color: #fff;
+  margin-top: 24px;
+  text-align: center;
+}
+
+.main-menu-team-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.main-menu-team-list li {
+  margin-bottom: 12px;
+}
+.main-menu-team-btn {
+  width: 100%;
+  background: #818cf8;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 0;
+  font-size: 1.05rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.main-menu-team-btn:hover {
+  background: #a5b4fc;
+  color: #312e81;
+}
+
+.main-menu-content {
+  flex: 1;
+  padding: 48px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  background: #f3f4f6;
+}
+
+.main-menu-empty {
+  text-align: center;
+  margin-top: 40px;
+  color: #6366f1;
+}
+
+.main-menu-create-btn {
+  margin-top: 16px;
+  background: #38bdf8;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 18px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.main-menu-create-btn:hover {
+  background: #0ea5e9;
+}
+
+.main-menu-create-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 18px;
+  background: #fff;
+  padding: 14px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px #cbd5e1;
+}
+.main-menu-create-form input {
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #c7d2fe;
+  font-size: 1rem;
+}
+.main-menu-create-form button {
+  padding: 7px 0;
+  border-radius: 4px;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+}
+.main-menu-create-form button[type="submit"] {
+  background: #6366f1;
+  color: #fff;
+  margin-bottom: 4px;
+}
+.main-menu-create-form button[type="button"] {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.notification-bell {
+  background: none;
+  border: none;
+  font-size: 1.7rem;
+  cursor: pointer;
+  position: relative;
+  color: #6366f1;
+  margin-left: 0;
+  margin-right: 0;
+  outline: none;
+}
+
+.notification-bell:hover {
+  color: #facc15;
+}
+
+.notification-bell span {
+  pointer-events: none;
+}
+
+.notification-bell .notification-count {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  background: #ef4444;
+  color: #fff;
+  border-radius: 50%;
+  font-size: 0.85rem;
+  padding: 2px 6px;
+  font-weight: bold;
+  min-width: 20px;
+  text-align: center;
+  z-index: 2;
+}
+
+.notification-dropdown {
+  position: absolute;
+  left: 0; /* Siempre pegado al extremo izquierdo */
+  top: 36px;
+  min-width: 220px;
+  background: #fff;
+  color: #22223b;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px #6366f133;
+  padding: 16px 14px 12px 14px;
+  z-index: 1002;
+  border: 1px solid #e0e7ff;
+  animation: fadeIn 0.18s;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-8px);}
+  to { opacity: 1; transform: translateY(0);}
+}
+
+.notification-dropdown h4 {
+  margin: 0 0 8px 0;
+  font-size: 1.1rem;
+  color: #6366f1;
+}
+
+.notification-dropdown ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.notification-dropdown li {
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.notification-dropdown button {
+  background: #22c55e;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 10px;
+  cursor: pointer;
+  margin-left: 12px;
+  font-size: 0.95rem;
+  transition: background 0.2s;
+}
+
+.notification-dropdown button:hover {
+  background: #16a34a;
+}

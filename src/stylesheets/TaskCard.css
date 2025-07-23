@@ -1,0 +1,47 @@
+.task-card {
+  background: #fff;
+  margin: 8px 0;
+  padding: 12px;
+  border-radius: 6px;
+  box-shadow: 0 1px 4px #ccc;
+  opacity: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 56px;
+  transition: background 0.2s, opacity 0.2s;
+}
+.task-card.dragging {
+  background: #dbeafe;
+  opacity: 0.7;
+}
+.task-card-handle {
+  font-size: 20px;
+  margin-right: 10px;
+  cursor: grab;
+  user-select: none;
+  color: #888;
+  flex-shrink: 0;
+}
+.task-card-title {
+  font-weight: bold;
+}
+.task-card-content {
+  flex: 1;
+}
+.task-card-chat-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: #6366f1;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

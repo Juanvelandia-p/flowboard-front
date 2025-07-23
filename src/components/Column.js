@@ -1,25 +1,40 @@
-
 import React from 'react';
 import TaskCard from './TaskCard';
 import { useDroppable } from '@dnd-kit/core';
+import '../stylesheets/BoardColumn.css';
 
 
-const Column = ({ column, tasks, onMoveTask }) => {
+const Column = ({ column, tasks, onMoveTask, onSelectTask, onAddTask, onDeleteTask }) => {
   const { setNodeRef, isOver } = useDroppable({ id: column.id });
   return (
     <div
       ref={setNodeRef}
-      style={{
-        minWidth: 300,
-        background: isOver ? '#e0e7ff' : '#f4f4f4',
-        borderRadius: 8,
-        padding: 16,
-        minHeight: 200
-      }}
+      className={`column${isOver ? ' over' : ''}`}
     >
-      <h2>{column.title}</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h2 className="column-title">{column.title}</h2>
+        <button
+          className="add-task-btn"
+          title="Agregar tarea"
+          onClick={() => onAddTask(String(column.id))}
+          style={{
+            border: 'none',
+            background: 'transparent',
+            fontSize: 22,
+            cursor: 'pointer',
+            marginRight: 4
+          }}
+        >+</button>
+      </div>
       {tasks.map((task, idx) => (
-        <TaskCard key={task.id} task={task} onMoveTask={onMoveTask} index={idx} />
+        <TaskCard
+          key={task.id}
+          task={task}
+          onMoveTask={onMoveTask}
+          index={idx}
+          onSelectTask={onSelectTask}
+          onDeleteTask={onDeleteTask}
+        />
       ))}
     </div>
   );

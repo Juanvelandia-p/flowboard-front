@@ -1,25 +1,30 @@
-
-import React, { useState, useEffect, useRef } from 'react';
-import SockJS from 'sockjs-client';
-import { Client } from '@stomp/stompjs';
+import React, { useState, useEffect } from 'react';
+import { useWebSocket } from '../context/WebSocketContext';
 import Column from './Column';
 import { DndContext, DragOverlay } from '@dnd-kit/core';
 import TaskCard from './TaskCard';
+import '../stylesheets/BoardColumn.css';
+import axios from 'axios';
 
-const columns = [
-  { id: 'todo', title: 'Pendiente' },
-  { id: 'inprogress', title: 'En Progreso' },
-  { id: 'done', title: 'Hecho' }
-];
-
-
-const Board = ({ tasks, onMoveTask, boardId, userId }) => {
+export default function Board({ tasks, onMoveTask, boardId, userId, onSelectTask, selectedSprint, token, refreshTasks }) {
   const [activeId, setActiveId] = useState(null);
-  const stompClient = useRef(null);
+  const [showAddTask, setShowAddTask] = useState(false);
+  const [newTaskTitle, setNewTaskTitle] = useState('');
+  const [newTaskDesc, setNewTaskDesc] = useState('');
+  const [newTaskEstado, setNewTaskEstado] = useState('TO-DO'); // Estado por defecto
+  const [addTaskColumn, setAddTaskColumn] = useState('TO-DO');
+  const { stompClient, addOnConnectListener } = useWebSocket();
 
-  // Agrupar tareas por columna
+  // Columnas
+  const columns = [
+    { id: 'TO-DO', title: 'Pendiente' },
+    { id: 'DOING', title: 'En progreso' },
+    { id: 'DONE', title: 'Hecho' }
+  ];
+
+  // Agrupa tareas por estado
   const tasksByColumn = columns.reduce((acc, col) => {
-    acc[col.id] = tasks.filter(t => t.status === col.id);
+    acc[col.id] = tasks.filter(t => t.estado === col.id);
     return acc;
   }, {});
 
@@ -31,87 +36,139 @@ const Board = ({ tasks, onMoveTask, boardId, userId }) => {
     const { active, over } = event;
     setActiveId(null);
     if (!over || !active) return;
-    const taskId = Number(active.id);
-    const newStatus = over.id;
-    // Solo mover si cambia de columna
-    const task = tasks.find(t => t.id === taskId);
-    if (task && task.status !== newStatus) {
-      onMoveTask(taskId, newStatus);
-      // Enviar evento WebSocket
-      if (stompClient.current && stompClient.current.connected) {
-        console.log('[WebSocket] Enviando evento:', {
-          taskId: taskId,
-          fromStatus: task.status,
-          toStatus: newStatus,
-          boardId: boardId,
-          userId: userId
-        });
+    const dndTaskId = String(active.id);
+    const newStatus = String(over.id);
+    const task = tasks.find(t => String(t.id) === dndTaskId);
+    if (task && task.estado !== newStatus) {
+      onMoveTask(task.id, newStatus);
+      // Enviar evento WebSocket si lo necesitas
+      if (stompClient?.current && stompClient.current.connected) {
         stompClient.current.publish({
-          destination: '/app/task/drag',
+          destination: `/app/task/drag`,
           body: JSON.stringify({
-            taskId: taskId,
-            fromStatus: task.status,
+            taskId: task.id,
+            fromStatus: task.estado,
             toStatus: newStatus,
-            boardId: boardId,
-            userId: userId
+            boardId,
+            userId
           })
         });
-      } else {
-        console.warn('[WebSocket] No conectado, no se envió el evento');
       }
     }
   };
 
   useEffect(() => {
-    // Conexión WebSocket
-    console.log('[WebSocket] Intentando conectar a ws://localhost:8080/ws');
-    const socket = new SockJS('http://localhost:8080/ws'); // Cambia la URL si es necesario
-    const client = new Client({
-      webSocketFactory: () => socket,
-      reconnectDelay: 5000,
-      onConnect: () => {
-        console.log('[WebSocket] Conectado');
-        // Suscribirse al topic del board
-        client.subscribe(`/topic/task-drag.${boardId}`, (message) => {
-          console.log('[WebSocket] Mensaje recibido:', message.body);
+    if (!stompClient?.current) return;
+    let subscription;
+    const subscribe = () => {
+      if (stompClient.current.connected) {
+        subscription = stompClient.current.subscribe(`/topic/task-drag.${boardId}`, (message) => {
           const event = JSON.parse(message.body);
-          // Evita procesar el evento si es tu propio drag (opcional)
-          if (event.userId !== userId) {
-            onMoveTask(Number(event.taskId), event.toStatus);
-          } else {
-            console.log('[WebSocket] Evento propio ignorado');
+          const task = tasks.find(t => String(t.id) === String(event.taskId));
+          // Solo mueve si la tarea existe en este usuario
+          if (event.userId !== userId && task) {
+            onMoveTask(task.id, event.toStatus);
           }
         });
-        console.log(`[WebSocket] Suscrito a /topic/task-drag.${boardId}`);
-      },
-      onStompError: (frame) => {
-        console.error('[WebSocket] Error STOMP:', frame);
-      },
-      onWebSocketError: (event) => {
-        console.error('[WebSocket] Error de conexión:', event);
       }
-    });
-    stompClient.current = client;
-    client.activate();
-    return () => {
-      client.deactivate();
-      console.log('[WebSocket] Desconectado');
     };
-  }, [boardId, userId, onMoveTask]);
+    let removeListener;
+    if (stompClient.current.connected) {
+      subscribe();
+    } else {
+      removeListener = addOnConnectListener(subscribe);
+    }
+    return () => {
+      if (subscription) subscription.unsubscribe();
+      if (removeListener) removeListener();
+    };
+  }, [stompClient, addOnConnectListener, boardId, userId, onMoveTask, tasks]);
 
-  const activeTask = tasks.find(t => t.id === Number(activeId));
+  const activeTask = tasks.find(t => String(t.id) === String(activeId));
+
+  // Handler para mostrar el formulario de nueva tarea
+  const handleShowAddTask = (colId) => {
+    setAddTaskColumn(colId);
+    setNewTaskEstado(colId);
+    setShowAddTask(true);
+  };
+
+  // Handler para crear la tarea
+  const handleAddTask = async (e) => {
+    e.preventDefault();
+    try {
+      // Crear tarea
+      await axios.post('https://flowboard-b3avawgzaqftbtcd.canadacentral-01.azurewebsites.net/api/tasks', {
+        titulo: newTaskTitle,
+        descripcion: newTaskDesc,
+        estado: newTaskEstado,
+        boardId,
+        sprintId: selectedSprint
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setShowAddTask(false);
+      setNewTaskTitle('');
+      setNewTaskDesc('');
+      if (refreshTasks) refreshTasks(); // Refresca las tareas
+    } catch {
+      alert('No se pudo crear la tarea');
+    }
+  };
+
+  const handleDeleteTask = async (taskId) => {
+    if (!window.confirm('¿Seguro que deseas eliminar esta tarea?')) return;
+    try {
+      // Eliminar tarea
+      await axios.delete(`https://flowboard-b3avawgzaqftbtcd.canadacentral-01.azurewebsites.net/api/tasks/${taskId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (refreshTasks) refreshTasks();
+    } catch {
+      alert('No se pudo eliminar la tarea');
+    }
+  };
 
   return (
     <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-      <div style={{ display: 'flex', gap: '16px', marginTop: '32px' }}>
+      <div className="board-container">
         {columns.map(col => (
           <Column
             key={col.id}
             column={col}
             tasks={tasksByColumn[col.id]}
             onMoveTask={onMoveTask}
+            onSelectTask={onSelectTask}
+            onAddTask={handleShowAddTask}
+            onDeleteTask={handleDeleteTask}
           />
         ))}
+        {showAddTask && (
+          <div className="modal-overlay">
+            <div className="modal-content">
+              <form onSubmit={handleAddTask} className="add-sprint-form">
+                <h3>Nueva tarea ({addTaskColumn})</h3>
+                <input
+                  type="text"
+                  value={newTaskTitle}
+                  onChange={e => setNewTaskTitle(e.target.value)}
+                  placeholder="Título"
+                  required
+                />
+                <textarea
+                  value={newTaskDesc}
+                  onChange={e => setNewTaskDesc(e.target.value)}
+                  placeholder="Descripción"
+                  required
+                />
+                <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                  <button type="submit" className="btn-primary">Crear</button>
+                  <button type="button" className="btn-secondary" onClick={() => setShowAddTask(false)}>Cancelar</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
       <DragOverlay>
         {activeTask ? (
@@ -120,6 +177,4 @@ const Board = ({ tasks, onMoveTask, boardId, userId }) => {
       </DragOverlay>
     </DndContext>
   );
-};
-
-export default Board;
+}
