@@ -86,6 +86,28 @@ export default function Board({ tasks, onMoveTask, boardId, userId, onSelectTask
     };
   }, [stompClient, addOnConnectListener, boardId, userId, onMoveTask, tasks]);
 
+  useEffect(() => {
+    if (!selectedSprint || !stompClient?.current) return;
+    let subscription;
+    const subscribe = () => {
+      if (stompClient.current.connected) {
+        subscription = stompClient.current.subscribe(`/topic/sprint-tasks.${selectedSprint}`, (message) => {
+          if (refreshTasks) refreshTasks(); // O agrega la tarea a tu estado si prefieres
+        });
+      }
+    };
+    let removeListener;
+    if (stompClient.current.connected) {
+      subscribe();
+    } else {
+      removeListener = addOnConnectListener(subscribe);
+    }
+    return () => {
+      if (subscription) subscription.unsubscribe();
+      if (removeListener) removeListener();
+    };
+  }, [selectedSprint, stompClient, addOnConnectListener, refreshTasks]);
+
   const activeTask = tasks.find(t => String(t.id) === String(activeId));
 
   // Handler para mostrar el formulario de nueva tarea
