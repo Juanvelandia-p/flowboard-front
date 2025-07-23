@@ -6,11 +6,12 @@ const TaskChat = ({ taskId, userId, onClose }) => {
   const [input, setInput] = useState('');
   const { stompClient, addOnConnectListener } = useWebSocket();
   const chatBottomRef = useRef(null);
+  const API_BASE = 'https://flowboard-b3avawgzaqftbtcd.canadacentral-01.azurewebsites.net/api';
 
   // Cargar historial de mensajes al abrir el chat
   useEffect(() => {
     if (!taskId) return;
-    fetch(`https://flowboard-b3avawgzaqftbtcd.canadacentral-01.azurewebsites.net/api/messages/task/${taskId}`)
+    fetch(`${API_BASE}/messages/task/${taskId}`)
       .then(res => res.json())
       .then(data => setMessages(data))
       .catch(() => setMessages([]));
